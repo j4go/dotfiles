@@ -26,10 +26,11 @@ alias unproxy='unset all_proxy http_proxy https_proxy'
 # curl 代理 示例: curlproxy -I https://www.google.com/
 alias curlproxy="curl --socks5-hostname $SOCKS_URL --http2"
 
-export EDITOR="vim" 
-export GIT_EDITOR="code --wait"
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
+export EDITOR="vim"
+export GIT_EDITOR="vim"
+#export GIT_EDITOR="code --wait"
 
 # 让 Man 手册使用 Bat 渲染 (带语法高亮和自动分页)
 export MANROFFOPT="-c"
@@ -37,9 +38,8 @@ export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 
 
 # =============================================================================
-# Homebrew 与 基础环境变量
+# Homebrew环境
 # =============================================================================
-# 初始化 Homebrew
 if [[ -f "/opt/homebrew/bin/brew" ]]; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
 elif [[ -f "/usr/local/bin/brew" ]]; then
@@ -51,10 +51,19 @@ fi
 # PATH 路径管理 (使用 Zsh 自动去重语法)
 # =============================================================================
 typeset -U path fpath
+
+# zellij 补全配置 以下被注释掉的命令需要执行一次,初始化之后就不用动了
+# mkdir -p ~/.local/share/zsh/site-functions
+# zellij setup --generate-completion zsh > ~/.local/share/zsh/site-functions/_zellij
+# ls -l ~/.local/share/zsh/site-functions/_zellij
+# rm -f ~/.zcompdump; compinit
+fpath=($HOME/.local/share/zsh/site-functions $fpath)
+
+
 path=(
     $HOME/bin
     $HOME/.local/bin
-    $HOME/.cargo/bin       
+    $HOME/.cargo/bin
     $HOME/.lmstudio/bin
     $(brew --prefix)/opt/node@22/bin
     $(brew --prefix)/opt/curl/bin
@@ -109,6 +118,8 @@ zstyle ':completion:*' menu select                  # 补全菜单可选择
 # =============================================================================
 # 别名系统 (Aliases)
 # =============================================================================
+alias ze="zellij"
+alias zels="zellij list-sessions"
 alias ps='procs'
 alias pst="procs --tree"
 alias print="figlet"
@@ -139,7 +150,7 @@ if command -v bat >/dev/null; then
     alias cat='bat'
     alias bgrep='batgrep'
     alias bdiff='batdiff'
-    alias man='batman' 
+    alias man='batman'
 fi
 
 # Trash-CLI (替代 rm)
@@ -158,7 +169,7 @@ if command -v pay-respects >/dev/null; then
 fi
 
 if command -v dust >/dev/null; then
-    alias disk='dust' 
+    alias disk='dust'
 fi
 
 if command -v lazygit >/dev/null; then
@@ -217,3 +228,43 @@ function edit() {
     done
     open -e "$@"
 }
+
+# =============================================================================
+# 自动切换输入法
+# brew tap daipeihust/tap
+# brew install im-select
+# =============================================================================
+# 强制切换到 macOS 系统自带的纯英文输入法 (需在系统设置里添加 "ABC")
+if command -v im-select >/dev/null; then
+    # 这里的 ID 必须是系统 ABC 的 ID，而不是 Rime 的 ID
+    target_im="com.apple.keylayout.ABC"
+
+    # 获取当前输入法
+    current_im=$(im-select)
+
+    # 如果当前不是 ABC，则切换
+    if [[ "$current_im" != "$target_im" ]]; then
+        im-select "$target_im"
+    fi
+fi
+
+# =============================================================================
+# Zellij 自动启动与环境集成
+# =============================================================================
+
+# 1. 注入补全 (适配 Zsh) 这里改成上面的一次性引入了 不改的话source会报错
+#if command -v zellij >/dev/null; then
+#    eval "$(zellij setup --generate-completion zsh)"
+#fi
+
+# 2. 自动启动逻辑 (带 IDE 防护)
+# 只有在非 Zellij 环境、非 SSH、且非 IDE 内置终端时才启动
+if [[ -z "$ZELLIJ" && -z "$SSH_CONNECTION" ]]; then
+    if [[ "$TERM_PROGRAM" != "vscode" && "$TERM_PROGRAM" != "JetBrains-JediTerm" ]]; then
+        if command -v zellij >/dev/null; then
+            zellij attach -c w
+            # 自动连接名为 'w' 的会话；退出 Zellij 时直接关闭终端窗口
+            # exec zellij attach -c w
+        fi
+    fi
+fi

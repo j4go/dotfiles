@@ -5,9 +5,7 @@ emulator].
 
 [Alacritty terminal emulator]: https://github.com/alacritty/alacritty
 
-## Installation
-
-### Imports
+## Installation & Imports
 
 Clone the repository, or download the theme of your choice:
 
@@ -26,16 +24,3 @@ import = [
     "~/.config/alacritty/themes/themes/{theme}.toml"
 ]
 ```
-
-
-[alacritty-theme]: https://github.com/alacritty/alacritty-theme
-
-To add a new theme, please create a Pull Request. Note that submissions by theme
-authors are not accepted, to ensure there's at least some community interest.
-The following changes must be made for a new theme:
-
- - Add your theme to the `themes` directory with the `{theme}.toml` file format
- - Create a screenshot of your theme using the [`print_colors.sh`](./print_colors.sh) script
- - Add the screenshot to the `images` directory with the `{theme}.png` file format
- - Add your theme to the `README.md`, following alphabetical ordering
-
