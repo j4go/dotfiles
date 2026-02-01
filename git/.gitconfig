@@ -61,7 +61,9 @@
     
     # --- 高级 Log 视图 ---
     # 宇宙级 Log 命令：带分支拓扑图、彩色高亮、精简显示提交人与时间
-    lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+    # lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+    # commit 信息左对齐
+    lg = log --graph --pretty=format:'%C(bold yellow)%h%Creset %C(magenta)-%Creset %s %C(auto)%d%Creset %C(dim white)(%cr)%Creset %C(bold blue)<%an>%Creset' --abbrev-commit
 
 [help]
     # 自动纠正命令拼写错误。设置为 prompt 会在输入错误命令（如 stauts）时询问是否执行最接近的正确命令
