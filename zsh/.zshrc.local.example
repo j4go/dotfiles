@@ -1,0 +1,42 @@
+# ~/.env
+# =============================================================================
+# 🔒 敏感信息与私有环境变量
+# 注意：此文件严禁上传至 GitHub，请确保权限设置为 600
+# =============================================================================
+
+# --- Machine Specific Settings (机器特定设置) ---
+export PROXY_URL=""
+export SOCKS_URL=""
+
+# Python
+export UV_PYTHON="3.11.11"
+export PYTHONPYCACHEPREFIX="/tmp/python-cache"
+
+# --- AI Model Services (API Keys) ---
+# Google Gemini
+export GEMINI_API_KEY=""
+# Alibaba DashScope
+export DASHSCOPE_API_KEY=""
+# ByteDance Ark (Doubao) - Self
+export ARK_API_KEY=""
+# Tencent Hunyuan
+export TENCENT_API_KEY=""
+# SiliconFlow
+export SILICON_API_KEY=""
+
+# --- Search & Crawl Services ---
+export FIRECRAWL_KEY=""
+export EXA_API_KEY=""
+
+# --- Developer Tools & Tokens ---
+# GitHub Token (Cline)
+export GITHUB_CLINE_TOKEN=""
+# Logfire
+export LOGFIRE_TOKEN=""
+
+# --- Application Configs ---
+# N8N Security Settings
+export N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
+export N8N_RUNNERS_ENABLED=true
+
+
