@@ -1,0 +1,219 @@
+# =============================================================================
+# Mac ZSH 专用配置 ~/.zshrc
+
+# 测试zsh启动延迟 brew install hyperfine
+# zsh -f 参数表示禁用配置文件
+# hyperfine --warmup 3 --min-runs 10 "zsh -i -c exit"  "zsh -f -i -c exit"
+
+# =============================================================================
+
+
+# =============================================================================
+#  Basic Settings & Secrets & Proxy
+# =============================================================================
+ulimit -n 65535
+
+# 检查是否存在本地私密配置文件，如果有则加载
+if [[ -f "$HOME/.zshrc.local" ]]; then
+    source "$HOME/.zshrc.local"
+fi
+
+export NO_PROXY="localhost,127.0.0.1,0.0.0.0,192.168.*,10.*,*.local"
+export no_proxy=$NO_PROXY
+
+alias setproxy='export all_proxy=$PROXY_URL http_proxy=$PROXY_URL https_proxy=$PROXY_URL'
+alias unproxy='unset all_proxy http_proxy https_proxy'
+# curl 代理 示例: curlproxy -I https://www.google.com/
+alias curlproxy="curl --socks5-hostname $SOCKS_URL --http2"
+
+export EDITOR="vim" 
+export GIT_EDITOR="code --wait"
+export LANG="en_US.UTF-8"
+export LC_ALL="en_US.UTF-8"
+
+# 让 Man 手册使用 Bat 渲染 (带语法高亮和自动分页)
+export MANROFFOPT="-c"
+export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+
+
+# =============================================================================
+# Homebrew 与 基础环境变量
+# =============================================================================
+# 初始化 Homebrew
+if [[ -f "/opt/homebrew/bin/brew" ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -f "/usr/local/bin/brew" ]]; then
+    eval "$(/usr/local/bin/brew shellenv)"
+fi
+
+
+# =============================================================================
+# PATH 路径管理 (使用 Zsh 自动去重语法)
+# =============================================================================
+typeset -U path fpath
+path=(
+    $HOME/bin
+    $HOME/.local/bin
+    $HOME/.cargo/bin       
+    $HOME/.lmstudio/bin
+    $(brew --prefix)/opt/node@22/bin
+    $(brew --prefix)/opt/curl/bin
+    /Applications/Wireshark.app/Contents/MacOS
+    $path
+)
+
+
+# =============================================================================
+# Conda/Mamba 配置 (Lazy Load)
+# =============================================================================
+export MAMBA_EXE='/Users/cela/miniforge3/bin/mamba'
+export MAMBA_ROOT_PREFIX='/Users/cela/miniforge3'
+
+mamba_setup() {
+    if [[ -f "$MAMBA_ROOT_PREFIX/etc/profile.d/conda.sh" ]]; then
+        source "$MAMBA_ROOT_PREFIX/etc/profile.d/conda.sh"
+        source "$MAMBA_ROOT_PREFIX/etc/profile.d/mamba.sh"
+    fi
+    unalias mamba conda 2>/dev/null
+    unfunction mamba_setup
+}
+
+alias mamba='mamba_setup; mamba'
+alias conda='mamba_setup; conda'
+
+
+# =============================================================================
+# ZSH history与现代补全
+# =============================================================================
+HISTSIZE=1000000
+SAVEHIST=1000000
+HISTFILE="$HOME/.zsh_history"
+
+setopt SHARE_HISTORY          # 多个终端会话共享历史记录
+setopt HIST_IGNORE_ALL_DUPS   # 忽略重复命令
+setopt HIST_REDUCE_BLANKS     # 删除多余空格
+setopt EXTENDED_GLOB          # 开启高级通配符
+setopt INTERACTIVE_COMMENTS   # 允许命令行输入注释
+
+# 启用现代补全系统
+autoload -Uz compinit
+if [[ -n ${ZDOTDIR:-$HOME}/.zcompdump(#qN.m-1) ]]; then
+  compinit -C
+else
+  compinit
+fi
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}' # 补全忽略大小写
+zstyle ':completion:*' menu select                  # 补全菜单可选择
+
+
+# =============================================================================
+# 别名系统 (Aliases)
+# =============================================================================
+alias ps='procs'
+alias pst="procs --tree"
+alias print="figlet"
+alias rocky='ssh rocky'
+alias fedora='ssh fedora'
+alias m='macmon'
+alias so="source ~/.zshrc"
+alias h="history"
+alias lsblk='diskutil list'
+alias update_all='brew update && brew upgrade && brew cleanup'
+alias gitup='git add . && git commit -m "update: $(date +%Y-%m-%d)" && git push'
+
+# AI/Dev 服务
+alias serve='OLLAMA_ORIGINS="*" OLLAMA_KEEP_ALIVE=20m ollama serve'
+alias jupyter="jupyter lab --port 9999"
+
+# Eza (替代 ls)
+if command -v eza >/dev/null; then
+    alias ls='eza --icons=always --group-directories-first --time-style iso'
+    alias l='eza -lh --icons=auto'
+    alias ll='eza -lha --icons=auto --sort=name --group-directories-first'
+    alias la='eza -a --icons=auto'
+    alias lt='eza --tree --level=2 --icons=auto'
+fi
+
+# Bat (替代 cat & man)
+if command -v bat >/dev/null; then
+    alias cat='bat'
+    alias bgrep='batgrep'
+    alias bdiff='batdiff'
+    alias man='batman' 
+fi
+
+# Trash-CLI (替代 rm)
+if command -v trash-put >/dev/null; then
+    alias rm='trash-put'
+fi
+
+# SevenZip (替代 7z)
+if command -v 7zz >/dev/null; then
+    alias 7z='7zz'
+fi
+
+if command -v pay-respects >/dev/null; then
+    alias f='pay-respects'
+    alias fuck='pay-respects'
+fi
+
+if command -v dust >/dev/null; then
+    alias disk='dust' 
+fi
+
+if command -v lazygit >/dev/null; then
+    alias lg='lazygit'
+fi
+
+if command -v doggo >/dev/null; then
+    alias dig='doggo'
+    alias nslookup='doggo'
+fi
+
+if command -v gping >/dev/null; then
+    alias ping='gping'
+fi
+
+if command -v btop >/dev/null; then
+    alias top='btop'
+fi
+
+if command -v fastfetch >/dev/null; then
+    alias neo="fastfetch"
+    alias fetch="fastfetch"
+fi
+
+
+# =============================================================================
+# 插件与工具初始化
+# =============================================================================
+
+# Zoxide (智能目录跳转 - 必须先于 Starship 加载)
+eval "$(zoxide init zsh --cmd cd)"
+
+# FZF (模糊搜索 - 启用 Bat 预览)
+if command -v fzf >/dev/null; then
+    source <(fzf --zsh)
+    # 预览窗口配置：右侧显示，使用 bat 高亮
+    export FZF_DEFAULT_OPTS="--preview 'bat --color=always --style=numbers --line-range=:500 {}'"
+fi
+
+# Starship (Prompt 主题)
+eval "$(starship init zsh)"
+
+# Zsh 功能插件 (必须最后加载)
+source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+
+# =============================================================================
+# 自定义函数
+# =============================================================================
+
+# Mac下使用默认的aplle文本编辑器(不是Vim)
+function edit() {
+    for file in "$@"; do
+        [[ ! -e "$file" ]] && touch "$file" && echo "📄 Created: $file"
+    done
+    open -e "$@"
+}
