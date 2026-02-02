@@ -1,6 +1,6 @@
 [general]
 import = [
-    "~/.config/alacritty/alacritty-theme/themes/everforest_light.toml"
+    "~/.config/alacritty/alacritty-theme/themes/everforest_dark.toml"
 ]
 live_config_reload = true # 配置文件修改后自动热重载
 [env]
@@ -20,7 +20,7 @@ lines = 54
 x = 2  # 左右间距
 y = 28  # 顶部留白，用于模拟伪标题栏
 [font]
-size = 16
+size = 15
 builtin_box_drawing = true
 [font.normal]
 family = "Maple Mono NF CN"
