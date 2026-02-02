@@ -12,6 +12,8 @@ theme "everforest-light"
 
 // 默认布局 (Compact 模式去除了顶部繁杂的状态栏)
 default_layout "compact"
+// 面板边框
+pane_frames false
 
 // 鼠标支持 (允许点击切换面板、调整大小)
 mouse_mode true
@@ -27,7 +29,7 @@ themes {
     everforest-light {
         fg "#5c6a72"
         bg "#f3f5d9"
-        black "#282e33"
+        black "#d3c6aa"
         red "#f85552"
         green "#8da101"
         yellow "#dfa000"

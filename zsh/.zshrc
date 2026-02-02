@@ -118,8 +118,9 @@ zstyle ':completion:*' menu select                  # 补全菜单可选择
 # =============================================================================
 # 别名系统 (Aliases)
 # =============================================================================
-alias ze="zellij"
+alias zew="zellij a w"
 alias zels="zellij list-sessions"
+
 alias ps='procs'
 alias pst="procs --tree"
 alias print="figlet"
@@ -147,7 +148,6 @@ fi
 
 # Bat (替代 cat & man)
 if command -v bat >/dev/null; then
-    alias cat='bat'
     alias bgrep='batgrep'
     alias bdiff='batdiff'
     alias man='batman'
@@ -259,12 +259,12 @@ fi
 
 # 2. 自动启动逻辑 (带 IDE 防护)
 # 只有在非 Zellij 环境、非 SSH、且非 IDE 内置终端时才启动
-if [[ -z "$ZELLIJ" && -z "$SSH_CONNECTION" ]]; then
-    if [[ "$TERM_PROGRAM" != "vscode" && "$TERM_PROGRAM" != "JetBrains-JediTerm" ]]; then
-        if command -v zellij >/dev/null; then
-            zellij attach -c w
-            # 自动连接名为 'w' 的会话；退出 Zellij 时直接关闭终端窗口
-            # exec zellij attach -c w
-        fi
-    fi
-fi
+#if [[ -z "$ZELLIJ" && -z "$SSH_CONNECTION" ]]; then
+#    if [[ "$TERM_PROGRAM" != "vscode" && "$TERM_PROGRAM" != "JetBrains-JediTerm" ]]; then
+#        if command -v zellij >/dev/null; then
+#            zellij attach -c w
+#            # 自动连接名为 'w' 的会话；退出 Zellij 时直接关闭终端窗口
+#            # exec zellij attach -c w
+#        fi
+#    fi
+#fi
