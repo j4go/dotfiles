@@ -248,6 +248,23 @@ if command -v im-select >/dev/null; then
     fi
 fi
 
+# ===============================================
+# yazi y function
+# macOS / Zsh 专属适配版
+function y() {
+    # 使用更符合 BSD 规范的临时文件创建方式
+    local tmp="$(mktemp -t yazi-cwd)"
+    
+    # 显式使用 command 执行，防止 alias 循环
+    command yazi "$@" --cwd-file="$tmp"
+    
+    # Zsh 的判断语法更强大，但为了兼容性保留此写法
+    if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+        builtin cd -- "$cwd"
+    fi
+    \rm -f -- "$tmp"
+}
+
 # =============================================================================
 # Zellij 自动启动与环境集成
 # =============================================================================
