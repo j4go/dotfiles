@@ -190,6 +190,7 @@ if command -v btop >/dev/null; then
 fi
 
 if command -v fastfetch >/dev/null; then
+    alias os="macchina"
     alias neo="fastfetch"
     alias fetch="fastfetch"
 fi
@@ -202,11 +203,36 @@ fi
 # Zoxide (智能目录跳转 - 必须先于 Starship 加载)
 eval "$(zoxide init zsh --cmd cd)"
 
-# FZF (模糊搜索 - 启用 Bat 预览)
+# FZF (模糊搜索 - 同步自 Nix 配置)
 if command -v fzf >/dev/null; then
     source <(fzf --zsh)
-    # 预览窗口配置：右侧显示，使用 bat 高亮
-    export FZF_DEFAULT_OPTS="--preview 'bat --color=always --style=numbers --line-range=:500 {}'"
+    
+    # --- 变量定义 (对应 bash.nix 逻辑) ---
+    # 基础 fd 命令：排除 .git，显示隐藏文件，跟随链接，移除 ./ 前缀
+    local fd_base="fd --strip-cwd-prefix --hidden --follow --exclude .git"
+    
+    # 1. 默认配置 (UI 与 行为)
+    # 对应 defaultCommand 和 defaultOptions
+    export FZF_DEFAULT_COMMAND="$fd_base --type f"
+    export FZF_DEFAULT_OPTS=" \
+        --height 40% \
+        --layout=reverse \
+        --border \
+        --inline-info \
+        --color='header:italic' \
+        --bind 'ctrl-/:toggle-preview'"
+
+    # 2. 文件组件 (CTRL-T)
+    # 对应 fileWidgetCommand 和 fileWidgetOptions
+    export FZF_CTRL_T_COMMAND="$fd_base --type f"
+    # Preview: 目录用 eza 树状显示，文件用 bat 显示前500行
+    export FZF_CTRL_T_OPTS="--preview '[[ -d {} ]] && eza --tree --color=always --level=2 {} || bat --style=numbers --color=always --line-range=:500 {}'"
+
+    # 3. 目录组件 (ALT-C)
+    # 对应 changeDirWidgetCommand 和 changeDirWidgetOptions
+    export FZF_ALT_C_COMMAND="$fd_base --type d"
+    # Preview: 使用 eza 显示目录树
+    export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always --icons=auto --level=2 {}'"
 fi
 
 # Starship (Prompt 主题)
@@ -254,10 +280,10 @@ fi
 function y() {
     # 使用更符合 BSD 规范的临时文件创建方式
     local tmp="$(mktemp -t yazi-cwd)"
-    
+
     # 显式使用 command 执行，防止 alias 循环
     command yazi "$@" --cwd-file="$tmp"
-    
+
     # Zsh 的判断语法更强大，但为了兼容性保留此写法
     if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
         builtin cd -- "$cwd"
