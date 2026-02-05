@@ -100,7 +100,7 @@ style:
 
   # 🟢 优化点：字体大小调整为 20pt/16pt，适配 Retina 高分屏阅读
   font_face: 'Maple Mono NF CN'
-  font_point: 16
+  font_point: 17
   label_font_face: 'Maple Mono NF CN'
   label_font_point: 16
   comment_font_face: 'Maple Mono NF CN'
