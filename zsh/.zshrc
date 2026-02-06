@@ -13,6 +13,13 @@
 # =============================================================================
 ulimit -n 65535
 
+# -i: 忽略隐藏文件 (.git, .Trash 等)
+# -X Library: 显式排除 Library 目录 (解决卡死的核心)
+# -x: 限制在当前文件系统 (不扫描外接硬盘/网络挂载)
+# alias du_home="dust -i -X Library -x"
+alias du_home="dust -X Library -x"
+alias du_lib="ncdu -x ~/Library"
+
 # 检查是否存在本地私密配置文件，如果有则加载
 if [[ -f "$HOME/.zshrc.local" ]]; then
     source "$HOME/.zshrc.local"
