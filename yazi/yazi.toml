@@ -1,4 +1,5 @@
 # Yazi v26.2.2 最佳实践配置
+# https://yazi-rs.github.io/docs/configuration/yazi
 
 [mgr]
 ratio          = [ 2, 3, 4 ]
@@ -12,11 +13,11 @@ scrolloff      = 5
 
 [preview]
 tab_size      = 2
-max_width     = 1000
-max_height    = 1000
+max_width     = 1600
+max_height    = 1200
 cache_dir     = ""        # 使用默认缓存路径
 image_filter  = "lanczos3"
-image_quality = 80
+image_quality = 90
 
 [opener]
 edit = [
