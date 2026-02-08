@@ -13,6 +13,8 @@
 # =============================================================================
 ulimit -n 65535
 
+export XDG_CACHE_HOME="$HOME/.cache"
+
 # -i: 忽略隐藏文件 (.git, .Trash 等)
 # -X Library: 显式排除 Library 目录 (解决卡死的核心)
 # -x: 限制在当前文件系统 (不扫描外接硬盘/网络挂载)
@@ -80,25 +82,6 @@ path=(
 
 
 # =============================================================================
-# Conda/Mamba 配置 (Lazy Load)
-# =============================================================================
-export MAMBA_EXE='/Users/cela/miniforge3/bin/mamba'
-export MAMBA_ROOT_PREFIX='/Users/cela/miniforge3'
-
-mamba_setup() {
-    if [[ -f "$MAMBA_ROOT_PREFIX/etc/profile.d/conda.sh" ]]; then
-        source "$MAMBA_ROOT_PREFIX/etc/profile.d/conda.sh"
-        source "$MAMBA_ROOT_PREFIX/etc/profile.d/mamba.sh"
-    fi
-    unalias mamba conda 2>/dev/null
-    unfunction mamba_setup
-}
-
-alias mamba='mamba_setup; mamba'
-alias conda='mamba_setup; conda'
-
-
-# =============================================================================
 # ZSH history与现代补全
 # =============================================================================
 HISTSIZE=1000000
@@ -137,11 +120,9 @@ alias m='macmon'
 alias so="source ~/.zshrc"
 alias h="history"
 alias lsblk='diskutil list'
-alias update_all='brew update && brew upgrade && brew cleanup'
+alias update='brew update && brew upgrade && brew cleanup'
 alias gitup='git add . && git commit -m "update: $(date +%Y-%m-%d)" && git push'
 
-# AI/Dev 服务
-alias serve='OLLAMA_ORIGINS="*" OLLAMA_KEEP_ALIVE=20m ollama serve'
 alias jupyter="jupyter lab --port 9999"
 
 # Eza (替代 ls)
@@ -197,7 +178,7 @@ if command -v btop >/dev/null; then
 fi
 
 if command -v fastfetch >/dev/null; then
-    alias os="macchina"
+    alias os="fastfetch"
     alias neo="fastfetch"
     alias fetch="fastfetch"
 fi
@@ -318,3 +299,9 @@ function y() {
 #        fi
 #    fi
 #fi
+#
+
+# 打开终端时执行fastfetch
+fastfetch
+
+

@@ -1,0 +1,22 @@
+# Yazi v26.2.2 快捷键增强
+
+[mgr]
+prepend_keymap = [
+    # 智能过滤 (插件)
+    { on = [ "F" ], run = "plugin smart-filter", desc = "Smart filter" },
+    
+    # 快速修改权限 (插件)
+    { on = [ "c", "m" ], run = "plugin chmod", desc = "Chmod" },
+
+    # Git 状态跳转
+    { on = [ "g", "s" ], run = "plugin git", desc = "Git status" },
+
+    # 复制当前文件内容到剪贴板 (macOS pbcopy)
+    { on = [ "y", "c" ], run = 'shell "cat \"$0\" | pbcopy" --confirm', desc = "Copy file content" },
+
+    # 快速进入配置目录
+    { on = [ "g", "d" ], run = "cd ~/.config/yazi", desc = "Go to config" },
+    
+    # 悬浮终端 (在当前目录打开 Shell)
+    { on = [ "!" ], run = 'shell "$SHELL" --block', desc = "Open shell here" },
+]
