@@ -305,3 +305,4 @@ function y() {
 fastfetch
 
 
+eval "$(direnv hook zsh)"
