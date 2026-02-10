@@ -1,0 +1,51 @@
+# ~/.config/direnv/direnvrc
+# 注意：此文件必须使用 Bash 语法，即使你在使用 Zsh。
+
+layout_python_flex() {
+  local env_name=$1
+  local requested_version="${2:-3.13.12}"
+  local max_supported="3.14.3"
+
+  # 定义 Micromamba 根目录
+  export MAMBA_ROOT_PREFIX="$HOME/.micromamba"
+  mkdir -p "$MAMBA_ROOT_PREFIX"
+
+  # --- 版本排序逻辑 (适配 macOS) ---
+  # macOS 默认 sort 不支持 -V，尝试检测 GNU sort (gsort)
+  local sort_cmd="sort"
+  if command -v gsort &> /dev/null; then
+      sort_cmd="gsort"
+  fi
+
+  # 比较版本号
+  local final_version=$(printf "%s\n%s" "$requested_version" "$max_supported" | $sort_cmd -V | head -n1)
+
+  if [ "$requested_version" != "$final_version" ]; then
+    echo "⚠️  Requested $requested_version exceeds max supported $max_supported."
+    final_version=$max_supported
+  fi
+  
+  echo "🚀 Python Version: $final_version"
+
+  # --- 关键：Micromamba 初始化 ---
+  # 必须使用 -s bash，因为 direnv 在 bash 子 shell 中运行
+  eval "$(micromamba shell hook -s bash --root-prefix "$MAMBA_ROOT_PREFIX")"
+
+  # 检查并创建环境
+  if [ ! -d "$MAMBA_ROOT_PREFIX/envs/$env_name" ]; then
+    echo "📦 Creating environment in $MAMBA_ROOT_PREFIX/envs/$env_name"
+    micromamba create -n "$env_name" python=$final_version -c conda-forge -y
+  fi
+
+  # 激活环境 (direnv 会捕获此操作产生的环境变量变化)
+  micromamba activate "$env_name"
+
+  # --- UV 集成 ---
+  # 设置 UV 使用当前的 python 路径
+  export UV_PYTHON="$(which python)"
+  
+  if [ -f "pyproject.toml" ]; then
+    # echo "🔥 Syncing dependencies with uv..."
+    uv sync --quiet
+  fi
+}

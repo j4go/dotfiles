@@ -1,0 +1,45 @@
+layout_python_flex() {
+  local env_name=$1
+  local requested_version="${2:-3.13.12}"
+  local max_supported="3.14.3"
+
+  export MAMBA_ROOT_PREFIX="$HOME/.micromamba"
+  mkdir -p "$MAMBA_ROOT_PREFIX"
+
+  # --- 优化：使用 Python3 进行可靠的版本比较 (macOS 此时必有 python3) ---
+  # 这比 sort -V 更可靠，不需要安装 coreutils
+  local final_version=$(/usr/bin/python3 -c "
+v1='$requested_version'.split('.')
+v2='$max_supported'.split('.')
+# 将版本号补齐为3位 (例如 3.12 -> 3.12.0) 以便比较
+def pad(v): return [int(x) for x in v] + [0]*(3-len(v))
+print('$requested_version' if pad(v1) < pad(v2) else '$max_supported')
+")
+
+  if [ "$requested_version" != "$final_version" ]; then
+    echo "⚠️  Requested $requested_version exceeds max supported $max_supported."
+    final_version=$max_supported
+  fi
+
+  # --- 初始化 Micromamba ---
+  eval "$(micromamba shell hook -s bash --root-prefix "$MAMBA_ROOT_PREFIX")"
+
+  # --- 智能创建环境 ---
+  # 检查环境是否存在，且 Python 版本是否匹配 (简单检查)
+  if [ ! -d "$MAMBA_ROOT_PREFIX/envs/$env_name" ]; then
+    echo "📦 Creating environment '$env_name' with Python $final_version..."
+    micromamba create -n "$env_name" python=$final_version -c conda-forge -y
+  fi
+
+  micromamba activate "$env_name"
+
+  # --- UV 同步 ---
+  export UV_PYTHON="$(which python)"
+  
+  if [ -f "pyproject.toml" ]; then
+    # 增加 || true 防止 uv sync 失败导致 direnv 崩溃，方便你调试
+    uv sync --quiet || echo "❌ 'uv sync' failed. Check your pyproject.toml python version requirements."
+  fi
+  
+  echo "✅ Environment ready: $(python --version)"
+}
