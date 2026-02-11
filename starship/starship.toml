@@ -1,47 +1,87 @@
-add_newline = false
-command_timeout = 1000
-format = "$username$hostname$directory$git_branch$git_state$git_status$nix_shell$cmd_duration$character"
+# ==========================================================================
+# Starship 0.11+ Optimized Config (Aligned with Nix & macOS Workflow)
+# ==========================================================================
 
-[character]
-error_symbol = "[✖](bold red)"
-success_symbol = "[➜](bold green)"
+# 1. 基础全局设置
+add_newline = true
+command_timeout = 1000
+
+# 2. 核心格式定义 (严格按照 Nix 逻辑排序，并加入耗时监控)
+format = """
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+$conda\
+$python\
+$cmd_duration\
+$line_break\
+$character"""
+
+# --------------------------------------------------------------------------
+# 模块细节配置
+# --------------------------------------------------------------------------
+
+[username]
+show_always = false
+format = "[$user]($style) @"
+style_user = "white dim"
+
+[hostname]
+ssh_only = true
+format = "[$hostname]($style) "
+style = "bold green"
 
 [directory]
-format = "[$path]($style) "
+truncation_length = 0      # 永不缩写路径
+truncate_to_repo = false   # 即使在 Git 库内也显示相对于 $HOME 的全路径
 style = "bold cyan"
-truncation_length = 2
+format = "[$path]($style) "
 
 [git_branch]
+symbol = " "
 format = "[$symbol$branch]($style) "
 style = "bold purple"
-symbol = " "
 
 [git_status]
 format = "[$all]($style) "
 style = "bold red"
 up_to_date = "[✓](bold green)"
 
-[hostname]
-disabled = false
-format = "[$ssh_symbol$hostname]($style) "
-ssh_only = true
-ssh_symbol = " "
-style = "bold #ffaf00"
+[conda]
+symbol = "󱆠 "
+format = "via [$symbol$environment]($style) "
+style = "bold dim magenta"
 
-[nix_shell]
-format = "[$symbol(nix-shell)]($style) "
-style = "bold blue"
-symbol = "❄️ "
+[python]
+symbol = "🐍 "
+format = "[$symbol($version )]($style)"
+style = "bold yellow"
+# 仅在关键配置文件存在时触发，避免干扰
+detect_files = ["pyproject.toml", "requirements.txt"]
+
+[cmd_duration]
+min_time = 2000           # 仅显示耗时超过 2 秒的命令
+format = "took [$duration]($style) "
+style = "yellow italic"   # 使用黄色斜体以示区分
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+
+# --------------------------------------------------------------------------
+# 禁用冗余模块 (保持界面清爽)
+# --------------------------------------------------------------------------
+
+[os]
+disabled = true
 
 [package]
 disabled = true
 
-[time]
+[nix_shell]
 disabled = true
 
-[username]
+[line_break]
 disabled = false
-format = "[$user]($style) @"
-show_always = false
-style_user = "white dim"
-
