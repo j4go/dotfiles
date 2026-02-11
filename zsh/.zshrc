@@ -37,13 +37,17 @@ alias curlproxy="curl --socks5-hostname $SOCKS_URL --http2"
 
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
-export EDITOR="vim"
-export GIT_EDITOR="vim"
+export EDITOR="nvim"
+export GIT_EDITOR="nvim"
 #export GIT_EDITOR="code --wait"
 
 # 让 Man 手册使用 Bat 渲染 (带语法高亮和自动分页)
 export MANROFFOPT="-c"
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+
+# 设置vim别名
+alias vi='nvim'
+alias vim='nvim'
 
 
 # =============================================================================
