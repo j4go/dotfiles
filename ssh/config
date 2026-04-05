@@ -39,18 +39,13 @@ Host *
 # GitHub (带代理)
 # ==========================================
 Host github.com
+    HostName ssh.github.com
+    Port 443
     User git
     IdentityFile ~/.ssh/id_rsa
+    IdentitiesOnly yes
     PreferredAuthentications publickey
-    # 只有 macOS/Linux 普遍内置 nc
-    # Windows 若在 PowerShell 下使用可能需要额外处理，
-    # 但在 Git Bash (MinGW) 下此命令通常有效
-    # macOS 内置 nc (netcat) 处理 HTTP 代理请求
-    # -X connect 表示使用 HTTP 代理协议
-    # -x 表示指定代理服务器地址与端口
-    # 如果你的代理是 SOCKS5 协议，请将 ProxyCommand 修改为：
-    # ProxyCommand nc -X 5 -x 127.0.0.1:10808 %h %p
-    ProxyCommand nc -X connect -x 127.0.0.1:10808 %h %p
+    ProxyCommand /usr/bin/nc -X connect -x 127.0.0.1:10808 %h %p
 
 # ==========================================
 # 虚拟机 / 内网服务器

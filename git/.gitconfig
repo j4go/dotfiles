@@ -68,3 +68,5 @@
 [help]
     # 自动纠正命令拼写错误。设置为 prompt 会在输入错误命令（如 stauts）时询问是否执行最接近的正确命令
     autocorrect = prompt
+[safe]
+	directory = *
