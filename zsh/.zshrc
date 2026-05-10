@@ -22,6 +22,9 @@ export XDG_CACHE_HOME="$HOME/.cache"
 alias du_home="dust -X Library -x"
 alias du_lib="ncdu -x ~/Library"
 
+alias hide="chflags hidden"
+alias display="hflags nohidden"
+
 # 检查是否存在本地私密配置文件，如果有则加载
 if [[ -f "$HOME/.zshrc.local" ]]; then
     source "$HOME/.zshrc.local"
@@ -75,6 +78,7 @@ fpath=($HOME/.local/share/zsh/site-functions $fpath)
 
 path=(
     $HOME/bin
+    $HOME/adb
     $HOME/.local/bin
     $HOME/.cargo/bin
     $HOME/.lmstudio/bin
@@ -198,11 +202,11 @@ eval "$(zoxide init zsh --cmd cd)"
 # FZF (模糊搜索 - 同步自 Nix 配置)
 if command -v fzf >/dev/null; then
     source <(fzf --zsh)
-    
+
     # --- 变量定义 (对应 bash.nix 逻辑) ---
     # 基础 fd 命令：排除 .git，显示隐藏文件，跟随链接，移除 ./ 前缀
     local fd_base="fd --strip-cwd-prefix --hidden --follow --exclude .git"
-    
+
     # 1. 默认配置 (UI 与 行为)
     # 对应 defaultCommand 和 defaultOptions
     export FZF_DEFAULT_COMMAND="$fd_base --type f"
@@ -306,6 +310,7 @@ function y() {
 #
 
 # 打开终端时执行fastfetch
+setproxy
 fastfetch
 
 
