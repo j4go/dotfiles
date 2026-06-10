@@ -1,8 +1,11 @@
 -- ==========================================================================
--- Neovim 0.11+ Ultimate Stable Config (Homebrew/macOS Edition)
+--  Neovim 0.11+ Config (Homebrew/macOS)
 -- ==========================================================================
 
--- 1. 基础引导 (Bootstrap Lazy.nvim)
+-- ==========================================================================
+--  1. Bootstrap Lazy.nvim
+-- ==========================================================================
+
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.uv.fs_stat(lazypath) then
   vim.fn.system({
@@ -13,42 +16,57 @@ if not vim.uv.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
--- 设置 Leader 键 (必须在加载插件前)
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 -- ==========================================================================
--- 2. 基础选项 (Options - 对应原 nix 配置)
+--  2. Options
 -- ==========================================================================
+
 local opt = vim.opt
 
-opt.termguicolors = true
+-- 显示
 opt.number = true
 opt.relativenumber = true
 opt.cursorline = true
-opt.showmode = false      -- 状态栏已有模式显示
+opt.showmode = false
+opt.signcolumn = "yes"            -- 固定 sign column，防止 gitsigns/诊断导致文本跳动
+opt.laststatus = 3                -- 全局状态栏（配合 lualine globalstatus）
+opt.splitright = true             -- 垂直分屏在右侧
+opt.splitbelow = true             -- 水平分屏在下方
+opt.scrolloff = 8                 -- 光标上下保留 8 行
+opt.sidescrolloff = 8             -- 光标左右保留 8 列
+opt.termguicolors = true
+
+-- 缩进
 opt.tabstop = 4
 opt.softtabstop = 4
 opt.shiftwidth = 4
 opt.expandtab = true
-opt.smartindent = false
 opt.autoindent = true
-opt.fileformats = "unix,dos"
+
+-- 搜索
 opt.hlsearch = true
 opt.incsearch = true
 opt.ignorecase = true
 opt.smartcase = true
+
+-- 性能 & 行为
 opt.undofile = true
 opt.timeoutlen = 300
+opt.fileformats = "unix,dos"
+opt.clipboard = "unnamedplus"     -- 系统剪贴板无缝集成
+opt.wrap = false                  -- 代码文件默认不折行
 
 -- ==========================================================================
--- 3. 插件配置 (Plugins)
+--  3. Plugins
 -- ==========================================================================
+
 require("lazy").setup({
-  -- 图标支持
-  { "nvim-tree/nvim-web-devicons", lazy = true },
+  -- 图标支持（多个插件依赖，直接加载）
+  { "nvim-tree/nvim-web-devicons" },
 
-  -- 主题: Catppuccin (Latte)
+  -- 主题: Catppuccin
   {
     "catppuccin/nvim",
     name = "catppuccin",
@@ -56,7 +74,6 @@ require("lazy").setup({
     config = function()
       require("catppuccin").setup({
         flavour = "latte",
-        transparent_background = false,
         term_colors = true,
         integrations = {
           cmp = true,
@@ -65,57 +82,79 @@ require("lazy").setup({
           telescope = { enabled = true },
           which_key = true,
           indent_blankline = { enabled = true },
-          native_lsp = {
-            enabled = true,
-            underlines = {
-              errors = { "undercurl" },
-              hints = { "undercurl" },
-              warnings = { "undercurl" },
-              information = { "undercurl" },
-            },
-          },
+          native_lsp = { enabled = true },
         },
       })
-      vim.cmd.colorscheme "catppuccin"
+      vim.cmd.colorscheme("catppuccin")
     end,
   },
 
-  -- 状态栏: Lualine
+  -- 状态栏
   {
     "nvim-lualine/lualine.nvim",
     opts = { options = { theme = "catppuccin", globalstatus = true } },
   },
 
-  -- 缩进线: Indent Blankline
-  { "lukas-reineke/indent-blankline.nvim", main = "ibl", opts = { indent = { char = "│" } } },
+  -- 缩进线
+  {
+    "lukas-reineke/indent-blankline.nvim",
+    main = "ibl",
+    opts = {
+      indent = { char = "│" },
+      scope = { enabled = true },  -- 高亮当前作用域
+    },
+  },
 
-  -- Git 状态: Gitsigns
-  { "lewis6991/gitsigns.nvim", opts = { signs = { add = { text = "+" }, change = { text = "~" }, delete = { text = "-" } } } },
+  -- Git 状态
+  { "lewis6991/gitsigns.nvim", opts = {} },
 
-  -- 快捷键提示: Which-Key
+  -- 快捷键提示
   { "folke/which-key.nvim", event = "VeryLazy", opts = {} },
 
-  -- 模糊搜索: Telescope
+  -- 模糊搜索
   {
     "nvim-telescope/telescope.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
     keys = {
       { "<leader>ff", "<cmd>Telescope find_files<cr>", desc = "Find Files" },
-      { "<leader>fg", "<cmd>Telescope live_grep<cr>", desc = "Live Grep" },
-      { "<leader>fb", "<cmd>Telescope buffers<cr>", desc = "Find Buffers" },
+      { "<leader>fg", "<cmd>Telescope live_grep<cr>",  desc = "Live Grep" },
+      { "<leader>fb", "<cmd>Telescope buffers<cr>",    desc = "Find Buffers" },
+    },
+    opts = {
+      defaults = {
+        mappings = {
+          i = {
+            ["<C-j>"] = "move_selection_next",
+            ["<C-k>"] = "move_selection_previous",
+          },
+        },
+        file_ignore_patterns = { "node_modules", ".git/" },
+      },
+      pickers = {
+        find_files = {
+          find_command = { "fd", "--type", "f", "--strip-cwd-prefix", "--hidden", "--exclude", ".git" },
+        },
+        live_grep = {
+          additional_args = function()
+            return { "--hidden", "--glob", "!.git" }
+          end,
+        },
+      },
     },
   },
 
-  -- 语法高亮: Treesitter (修复新版模块路径问题)
+  -- 语法高亮
   {
     "nvim-treesitter/nvim-treesitter",
     build = ":TSUpdate",
     config = function()
-      -- 使用 pcall 兼容 Treesitter 可能出现的模块更名
-      local ok, ts_configs = pcall(require, "nvim-treesitter.configs")
+      local ok, ts = pcall(require, "nvim-treesitter.configs")
       if ok then
-        ts_configs.setup({
-          ensure_installed = { "lua", "vim", "vimdoc", "bash", "markdown" },
+        ts.setup({
+          ensure_installed = {
+            "lua", "vim", "vimdoc", "bash", "markdown", "markdown_inline",
+            "python", "json", "yaml", "toml", "html", "css", "javascript",
+          },
           highlight = { enable = true },
           indent = { enable = true },
         })
@@ -123,7 +162,7 @@ require("lazy").setup({
     end,
   },
 
-  -- LSP & 自动补全 (0.11+ Native 模式)
+  -- LSP & 补全
   {
     "neovim/nvim-lspconfig",
     dependencies = {
@@ -138,6 +177,7 @@ require("lazy").setup({
     },
     config = function()
       require("mason").setup()
+
       local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
       require("mason-lspconfig").setup({
@@ -149,58 +189,58 @@ require("lazy").setup({
               opts.settings = {
                 Lua = {
                   diagnostics = { globals = { "vim" } },
-                  workspace = { library = vim.api.nvim_get_runtime_file("", true), checkThirdParty = false },
+                  workspace = {
+                    library = vim.api.nvim_get_runtime_file("", true),
+                    checkThirdParty = false,
+                  },
                 },
               }
             end
-            -- Neovim 0.11+ 原生启用方式 (取代 .setup())
             vim.lsp.config[server_name] = opts
             vim.lsp.enable(server_name)
           end,
-        }
+        },
       })
 
-      -- 补全引擎配置
+      -- 补全引擎
       local cmp = require("cmp")
       cmp.setup({
-        snippet = { expand = function(args) require("luasnip").lsp_expand(args.body) end },
+        snippet = {
+          expand = function(args) require("luasnip").lsp_expand(args.body) end,
+        },
         mapping = cmp.mapping.preset.insert({
           ["<Tab>"] = cmp.mapping.select_next_item(),
           ["<S-Tab>"] = cmp.mapping.select_prev_item(),
           ["<CR>"] = cmp.mapping.confirm({ select = true }),
         }),
-        sources = cmp.config.sources({ { name = "nvim_lsp" }, { name = "path" }, { name = "buffer" } }),
+        sources = cmp.config.sources(
+          { name = "nvim_lsp" },
+          { name = "buffer" },
+          { name = "path" }
+        ),
       })
     end,
   },
 })
 
 -- ==========================================================================
--- 4. 键位映射 (Keymaps - 与原 Nix 配置保持 1:1)
+--  4. Keymaps
 -- ==========================================================================
+
 local map = vim.keymap.set
 
--- 剪贴板交互
-map({"n", "v"}, "<leader>y", '"+y', { desc = "Copy to System" })
-map("n", "<leader>p", '"+p', { desc = "Paste from System" })
-map("n", "<leader>ya", ':%y+<CR>', { desc = "Copy whole file", silent = true })
+-- 剪贴板（unnamedplus 已启用，以下保留作为显式操作）
+map({ "n", "v" }, "<leader>y", '"+y', { desc = "Yank to system clipboard" })
+map("n", "<leader>p", '"+p', { desc = "Paste from system clipboard" })
+map("n", "<leader>ya", ":%y+<CR>", { desc = "Yank whole file", silent = true })
 
--- 辅助：ESC 清除搜索高亮
+-- 清除搜索高亮
 map("n", "<Esc>", ":nohlsearch<CR><Esc>", { silent = true })
 
--- Caps Lock 开启时的 Normal 模式修复 (A-Z 映射为 a-z)
-local letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-for i = 1, #letters do
-  local c = letters:sub(i, i)
-  -- 排除常用的大写键
-  if not (c == "G" or c == "V" or c == "C" or c == "R") then
-    map("n", c, c:lower(), { noremap = true, silent = true })
-  end
-end
+-- ==========================================================================
+--  5. AutoCmd
+-- ==========================================================================
 
--- ==========================================================================
--- 5. 自动命令 (AutoCmd)
--- ==========================================================================
 -- 恢复上次退出时的光标位置
 vim.api.nvim_create_autocmd("BufReadPost", {
   callback = function()
