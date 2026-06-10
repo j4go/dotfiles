@@ -1,5 +1,5 @@
 {
   "view_type": "Gauge",
-  "color": "Green",
+  "color": "Red",
   "interval": 1000
 }

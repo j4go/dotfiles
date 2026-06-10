@@ -1,139 +1,189 @@
+#!/bin/zsh
 # =============================================================================
-# Mac ZSH 专用配置 ~/.zshrc
-
-# 测试zsh启动延迟 brew install hyperfine
-# zsh -f 参数表示禁用配置文件
-# hyperfine --warmup 3 --min-runs 10 "zsh -i -c exit"  "zsh -f -i -c exit"
-
+#  ~/.zshrc  ——  macOS Zsh 配置
+# =============================================================================
+# 性能测试: hyperfine --warmup 3 --min-runs 10 "zsh -i -c exit"
 # =============================================================================
 
 
 # =============================================================================
-#  Basic Settings & Secrets & Proxy
+#  基础环境变量
 # =============================================================================
-ulimit -n 65535
 
-export XDG_CACHE_HOME="$HOME/.cache"
-
-# -i: 忽略隐藏文件 (.git, .Trash 等)
-# -X Library: 显式排除 Library 目录 (解决卡死的核心)
-# -x: 限制在当前文件系统 (不扫描外接硬盘/网络挂载)
-# alias du_home="dust -i -X Library -x"
-alias du_home="dust -X Library -x"
-alias du_lib="ncdu -x ~/Library"
-
-alias hide="chflags hidden"
-alias display="hflags nohidden"
-
-# 检查是否存在本地私密配置文件，如果有则加载
-if [[ -f "$HOME/.zshrc.local" ]]; then
-    source "$HOME/.zshrc.local"
-fi
-
-export NO_PROXY="localhost,127.0.0.1,0.0.0.0,192.168.*,10.*,*.local"
-export no_proxy=$NO_PROXY
-
-alias setproxy='export all_proxy=$PROXY_URL http_proxy=$PROXY_URL https_proxy=$PROXY_URL'
-alias unproxy='unset all_proxy http_proxy https_proxy'
-# curl 代理 示例: curlproxy -I https://www.google.com/
-alias curlproxy="curl --socks5-hostname $SOCKS_URL --http2"
-
+# 区域与编码
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
+
+# 默认编辑器
 export EDITOR="nvim"
 export GIT_EDITOR="nvim"
-#export GIT_EDITOR="code --wait"
 
-# 让 Man 手册使用 Bat 渲染 (带语法高亮和自动分页)
-export MANROFFOPT="-c"
-export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+# 文件描述符上限
+ulimit -n 65535
 
-# 设置vim别名
-alias vi='nvim'
-alias vim='nvim'
+# XDG 目录
+export XDG_CACHE_HOME="$HOME/.cache"
+
+# 代理白名单
+export NO_PROXY="localhost,127.0.0.1,0.0.0.0,192.168.*,10.*,*.local"
+export no_proxy="$NO_PROXY"
+
+# Homebrew 国内镜像（中科大）
+export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.ustc.edu.cn/brew.git"
+export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.ustc.edu.cn/homebrew-core.git"
+export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles"
 
 
 # =============================================================================
-# Homebrew环境
+#  Homebrew 初始化
 # =============================================================================
-if [[ -f "/opt/homebrew/bin/brew" ]]; then
+
+if [[ -x "/opt/homebrew/bin/brew" ]]; then
     eval "$(/opt/homebrew/bin/brew shellenv)"
-elif [[ -f "/usr/local/bin/brew" ]]; then
+elif [[ -x "/usr/local/bin/brew" ]]; then
     eval "$(/usr/local/bin/brew shellenv)"
 fi
 
 
 # =============================================================================
-# PATH 路径管理 (使用 Zsh 自动去重语法)
+#  PATH 管理
 # =============================================================================
+
+# PATH 去重（必须在赋值前声明）
 typeset -U path fpath
 
-# zellij 补全配置 以下被注释掉的命令需要执行一次,初始化之后就不用动了
-# mkdir -p ~/.local/share/zsh/site-functions
-# zellij setup --generate-completion zsh > ~/.local/share/zsh/site-functions/_zellij
-# ls -l ~/.local/share/zsh/site-functions/_zellij
-# rm -f ~/.zcompdump; compinit
-fpath=($HOME/.local/share/zsh/site-functions $fpath)
+path=($HOME/bin $HOME/.local/bin $HOME/.cargo/bin $path)
 
+# 可选路径（仅在存在时添加）
+[[ -d "$HOME/adb" ]]           && path=("$HOME/adb" $path)
+[[ -d "$HOME/.lmstudio/bin" ]] && path=("$HOME/.lmstudio/bin" $path)
+[[ -d "/Applications/Wireshark.app/Contents/MacOS" ]] && path=("/Applications/Wireshark.app/Contents/MacOS" $path)
 
-path=(
-    $HOME/bin
-    $HOME/adb
-    $HOME/.local/bin
-    $HOME/.cargo/bin
-    $HOME/.lmstudio/bin
-    $(brew --prefix)/opt/node@22/bin
-    $(brew --prefix)/opt/curl/bin
-    /Applications/Wireshark.app/Contents/MacOS
-    $path
-)
+# Homebrew 特定版本软件
+if command -v brew >/dev/null; then
+    local brew_prefix="$(brew --prefix)"
+    [[ -d "$brew_prefix/opt/node@22/bin" ]] && path=("$brew_prefix/opt/node@22/bin" $path)
+    [[ -d "$brew_prefix/opt/curl/bin" ]]    && path=("$brew_prefix/opt/curl/bin" $path)
+fi
+
+# Zellij 补全路径
+fpath=("$HOME/.local/share/zsh/site-functions" $fpath)
 
 
 # =============================================================================
-# ZSH history与现代补全
+#  历史记录与补全
 # =============================================================================
+
 HISTSIZE=1000000
 SAVEHIST=1000000
 HISTFILE="$HOME/.zsh_history"
 
-setopt SHARE_HISTORY          # 多个终端会话共享历史记录
+setopt SHARE_HISTORY          # 多终端共享历史
 setopt HIST_IGNORE_ALL_DUPS   # 忽略重复命令
-setopt HIST_REDUCE_BLANKS     # 删除多余空格
-setopt EXTENDED_GLOB          # 开启高级通配符
-setopt INTERACTIVE_COMMENTS   # 允许命令行输入注释
+setopt HIST_REDUCE_BLANKS     # 去除多余空格
+setopt EXTENDED_GLOB          # 高级通配符
+setopt INTERACTIVE_COMMENTS   # 命令行支持注释
 
-# 启用现代补全系统
+# 补全系统
 autoload -Uz compinit
-if [[ -n ${ZDOTDIR:-$HOME}/.zcompdump(#qN.m-1) ]]; then
-  compinit -C
-else
-  compinit
+compinit -d "${ZDOTDIR:-$HOME}/.zcompdump"
+
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+zstyle ':completion:*' menu select
+
+
+# =============================================================================
+#  工具初始化（顺序敏感）
+# =============================================================================
+
+# Zoxide（智能 cd，需在 Starship 之前）
+if command -v zoxide >/dev/null; then
+    eval "$(zoxide init zsh --cmd cd)"
 fi
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}' # 补全忽略大小写
-zstyle ':completion:*' menu select                  # 补全菜单可选择
+
+# FZF
+if command -v fzf >/dev/null; then
+    source <(fzf --zsh)
+
+    local fd_base="fd --strip-cwd-prefix --hidden --follow --exclude .git"
+
+    export FZF_DEFAULT_COMMAND="$fd_base --type f"
+    export FZF_DEFAULT_OPTS=" \
+        --height 40% \
+        --layout=reverse \
+        --border \
+        --inline-info \
+        --color='header:italic' \
+        --bind 'ctrl-/:toggle-preview'"
+
+    export FZF_CTRL_T_COMMAND="$fd_base --type f"
+    export FZF_CTRL_T_OPTS="--preview '[[ -d {} ]] && eza --tree --color=always --level=2 {} || bat --style=numbers --color=always --line-range=:500 {}'"
+
+    export FZF_ALT_C_COMMAND="$fd_base --type d"
+    export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always --icons=auto --level=2 {}'"
+fi
+
+# Starship Prompt
+if command -v starship >/dev/null; then
+    eval "$(starship init zsh)"
+fi
+
+# Zsh 插件（必须最后加载）
+if command -v brew >/dev/null; then
+    local brew_prefix="$(brew --prefix)"
+    [[ -f "$brew_prefix/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ]] && \
+        source "$brew_prefix/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+    [[ -f "$brew_prefix/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]] && \
+        source "$brew_prefix/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+fi
+
+# direnv（自动加载 .envrc）
+if command -v direnv >/dev/null; then
+    eval "$(direnv hook zsh)"
+fi
 
 
 # =============================================================================
-# 别名系统 (Aliases)
+#  别名系统
 # =============================================================================
-alias zew="zellij a w"
-alias zels="zellij list-sessions"
 
-alias ps='procs'
-alias pst="procs --tree"
-alias print="figlet"
-alias rocky='ssh rocky'
-alias fedora='ssh fedora'
-alias m='macmon'
+# 编辑器
+alias vi='nvim'
+alias vim='nvim'
+
+# 系统
 alias so="source ~/.zshrc"
 alias h="history"
 alias lsblk='diskutil list'
-alias update='brew update && brew upgrade && brew cleanup'
+
+# 代理
+alias setproxy='export all_proxy=$PROXY_URL http_proxy=$PROXY_URL https_proxy=$PROXY_URL'
+alias unproxy='unset all_proxy http_proxy https_proxy'
+alias curlproxy="curl --socks5-hostname \$SOCKS_URL --http2"
+
+# Homebrew
+alias brewclean='brew update && brew autoremove && brew cleanup -s'
+alias brewup='brew update && brew upgrade && brew autoremove && brew cleanup -s'
+
+# 磁盘分析
+alias du_home="dust -X Library -x"
+alias du_lib="ncdu -x ~/Library"
+
+# 文件隐藏/显示
+alias hide="chflags hidden"
+alias display="chflags nohidden"
+
+# Zellij
+alias zew="zellij a w"
+alias zels="zellij list-sessions"
+
+# Git 快捷
 alias gitup='git add . && git commit -m "update: $(date +%Y-%m-%d)" && git push'
 
+# Jupyter
 alias jupyter="jupyter lab --port 9999"
 
-# Eza (替代 ls)
+# 现代工具替代（按需加载）
 if command -v eza >/dev/null; then
     alias ls='eza --icons=always --group-directories-first --time-style iso'
     alias l='eza -lh --icons=auto'
@@ -142,21 +192,32 @@ if command -v eza >/dev/null; then
     alias lt='eza --tree --level=2 --icons=auto'
 fi
 
-# Bat (替代 cat & man)
 if command -v bat >/dev/null; then
     alias bgrep='batgrep'
     alias bdiff='batdiff'
     alias man='batman'
+    # Man 手册使用 Bat 渲染
+    export MANROFFOPT="-c"
+    export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 fi
 
-# Trash-CLI (替代 rm)
-if command -v trash-put >/dev/null; then
-    alias rm='trash-put'
+if command -v procs >/dev/null; then
+    alias ps='procs'
+    alias pst='procs --tree'
 fi
 
-# SevenZip (替代 7z)
-if command -v 7zz >/dev/null; then
-    alias 7z='7zz'
+if command -v lazygit >/dev/null; then
+    alias lg='lazygit'
+fi
+
+if command -v btop >/dev/null; then
+    alias top='btop'
+fi
+
+if command -v fastfetch >/dev/null; then
+    alias os='fastfetch'
+    alias neo='fastfetch'
+    alias fetch='fastfetch'
 fi
 
 if command -v pay-respects >/dev/null; then
@@ -168,10 +229,6 @@ if command -v dust >/dev/null; then
     alias disk='dust'
 fi
 
-if command -v lazygit >/dev/null; then
-    alias lg='lazygit'
-fi
-
 if command -v doggo >/dev/null; then
     alias dig='doggo'
     alias nslookup='doggo'
@@ -181,69 +238,32 @@ if command -v gping >/dev/null; then
     alias ping='gping'
 fi
 
-if command -v btop >/dev/null; then
-    alias top='btop'
+if command -v 7zz >/dev/null; then
+    alias 7z='7zz'
 fi
 
-if command -v fastfetch >/dev/null; then
-    alias os="fastfetch"
-    alias neo="fastfetch"
-    alias fetch="fastfetch"
+if command -v trash-put >/dev/null; then
+    alias rm='trash-put'
 fi
 
-
-# =============================================================================
-# 插件与工具初始化
-# =============================================================================
-
-# Zoxide (智能目录跳转 - 必须先于 Starship 加载)
-eval "$(zoxide init zsh --cmd cd)"
-
-# FZF (模糊搜索 - 同步自 Nix 配置)
-if command -v fzf >/dev/null; then
-    source <(fzf --zsh)
-
-    # --- 变量定义 (对应 bash.nix 逻辑) ---
-    # 基础 fd 命令：排除 .git，显示隐藏文件，跟随链接，移除 ./ 前缀
-    local fd_base="fd --strip-cwd-prefix --hidden --follow --exclude .git"
-
-    # 1. 默认配置 (UI 与 行为)
-    # 对应 defaultCommand 和 defaultOptions
-    export FZF_DEFAULT_COMMAND="$fd_base --type f"
-    export FZF_DEFAULT_OPTS=" \
-        --height 40% \
-        --layout=reverse \
-        --border \
-        --inline-info \
-        --color='header:italic' \
-        --bind 'ctrl-/:toggle-preview'"
-
-    # 2. 文件组件 (CTRL-T)
-    # 对应 fileWidgetCommand 和 fileWidgetOptions
-    export FZF_CTRL_T_COMMAND="$fd_base --type f"
-    # Preview: 目录用 eza 树状显示，文件用 bat 显示前500行
-    export FZF_CTRL_T_OPTS="--preview '[[ -d {} ]] && eza --tree --color=always --level=2 {} || bat --style=numbers --color=always --line-range=:500 {}'"
-
-    # 3. 目录组件 (ALT-C)
-    # 对应 changeDirWidgetCommand 和 changeDirWidgetOptions
-    export FZF_ALT_C_COMMAND="$fd_base --type d"
-    # Preview: 使用 eza 显示目录树
-    export FZF_ALT_C_OPTS="--preview 'eza --tree --color=always --icons=auto --level=2 {}'"
+if command -v figlet >/dev/null; then
+    alias print='figlet'
 fi
 
-# Starship (Prompt 主题)
-eval "$(starship init zsh)"
+if command -v macmon >/dev/null; then
+    alias m='macmon'
+fi
 
-# Zsh 功能插件 (必须最后加载)
-source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+# SSH 快捷
+alias rocky='ssh rocky'
+alias fedora='ssh fedora'
 
 
 # =============================================================================
-# 自定义函数
+#  自定义函数
 # =============================================================================
 
-# Mac下使用默认的aplle文本编辑器(不是Vim)
+# 使用 macOS 默认文本编辑器打开（自动创建不存在的文件）
 function edit() {
     for file in "$@"; do
         [[ ! -e "$file" ]] && touch "$file" && echo "📄 Created: $file"
@@ -251,67 +271,39 @@ function edit() {
     open -e "$@"
 }
 
-# =============================================================================
-# 自动切换输入法
-# brew tap daipeihust/tap
-# brew install im-select
-# =============================================================================
-# 强制切换到 macOS 系统自带的纯英文输入法 (需在系统设置里添加 "ABC")
-if command -v im-select >/dev/null; then
-    # 这里的 ID 必须是系统 ABC 的 ID，而不是 Rime 的 ID
-    target_im="com.apple.keylayout.ABC"
-
-    # 获取当前输入法
-    current_im=$(im-select)
-
-    # 如果当前不是 ABC，则切换
-    if [[ "$current_im" != "$target_im" ]]; then
-        im-select "$target_im"
-    fi
-fi
-
-# ===============================================
-# yazi y function
-# macOS / Zsh 专属适配版
+# Yazi 文件管理器集成（退出后自动切换目录）
 function y() {
-    # 使用更符合 BSD 规范的临时文件创建方式
     local tmp="$(mktemp -t yazi-cwd)"
-
-    # 显式使用 command 执行，防止 alias 循环
     command yazi "$@" --cwd-file="$tmp"
-
-    # Zsh 的判断语法更强大，但为了兼容性保留此写法
-    if cwd="$(cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+    if cwd="$(cat -- "$tmp")" && [[ -n "$cwd" && "$cwd" != "$PWD" ]]; then
         builtin cd -- "$cwd"
     fi
     \rm -f -- "$tmp"
 }
 
+
 # =============================================================================
-# Zellij 自动启动与环境集成
+#  输入法自动切换
 # =============================================================================
 
-# 1. 注入补全 (适配 Zsh) 这里改成上面的一次性引入了 不改的话source会报错
-#if command -v zellij >/dev/null; then
-#    eval "$(zellij setup --generate-completion zsh)"
-#fi
-
-# 2. 自动启动逻辑 (带 IDE 防护)
-# 只有在非 Zellij 环境、非 SSH、且非 IDE 内置终端时才启动
-#if [[ -z "$ZELLIJ" && -z "$SSH_CONNECTION" ]]; then
-#    if [[ "$TERM_PROGRAM" != "vscode" && "$TERM_PROGRAM" != "JetBrains-JediTerm" ]]; then
-#        if command -v zellij >/dev/null; then
-#            zellij attach -c w
-#            # 自动连接名为 'w' 的会话；退出 Zellij 时直接关闭终端窗口
-#            # exec zellij attach -c w
-#        fi
-#    fi
-#fi
-#
-
-# 打开终端时执行fastfetch
-setproxy
-fastfetch
+if command -v im-select >/dev/null; then
+    target_im="com.apple.keylayout.ABC"
+    current_im=$(im-select)
+    [[ "$current_im" != "$target_im" ]] && im-select "$target_im"
+fi
 
 
-eval "$(direnv hook zsh)"
+# =============================================================================
+#  启动时显示系统信息
+# =============================================================================
+
+if command -v fastfetch >/dev/null; then
+    fastfetch
+fi
+
+
+# =============================================================================
+#  本地私有配置（最后加载，覆盖上述设置）
+# =============================================================================
+
+[[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"

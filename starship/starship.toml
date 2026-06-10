@@ -4,7 +4,7 @@
 
 # 1. 基础全局设置
 add_newline = true
-command_timeout = 1000
+command_timeout = 3000
 
 # 2. 核心格式定义 (严格按照 Nix 逻辑排序，并加入耗时监控)
 format = """

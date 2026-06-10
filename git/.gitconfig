@@ -1,6 +1,6 @@
 [user]
     # 用户身份信息
-    name = j4go
+	name = j4
     email = yianny@163.com
 
 [http]
@@ -9,7 +9,6 @@
     # 设置大文件上传缓冲区大小（约 900MB），防止推送大文件时因 RPC 限制导致失败
     postBuffer = 957286400
     # 全局网络代理，加速访问 GitHub
-    proxy = http://127.0.0.1:10808
 
 [filter "lfs"]
     # Git LFS (Large File Storage) 配置，用于管理仓库中的二进制大文件
