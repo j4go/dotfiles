@@ -121,4 +121,4 @@ dotfiles/
 
 ## 许可证
 
-个人使用，仅供参考。
+[MIT License](./LICENSE) © 2026 j4
