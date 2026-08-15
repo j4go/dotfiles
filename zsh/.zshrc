@@ -10,6 +10,11 @@
 #  基础环境变量
 # =============================================================================
 
+# web search
+export EXA_API_KEY="REDACTED"
+export TAVILY_API_KEY="REDACTED"
+export FIRECRAWL_API_KEY="REDACTED"
+
 # 区域与编码
 export LANG="en_US.UTF-8"
 export LC_ALL="en_US.UTF-8"
@@ -307,3 +312,6 @@ fi
 # =============================================================================
 
 [[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
+
+# DeepSeek API key（omp / codex / 通用）
+export DEEPSEEK_API_KEY="REDACTED"
