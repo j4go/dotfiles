@@ -68,7 +68,7 @@ endif
 
 " Everforest 核心配置
 set background=dark
-let g:everforest_background = 'medium'  " 对比度：hard, medium, soft (推荐 medium)
+let g:everforest_background = 'hard'  " 对比度：hard, medium, soft (统一 Everforest Dark Hard)
 let g:everforest_enable_italic = 1    " 允许斜体
 let g:everforest_better_performance = 0 " 关闭性能优化
 

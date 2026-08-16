@@ -66,33 +66,20 @@ require("lazy").setup({
   -- 图标支持（多个插件依赖，直接加载）
   { "nvim-tree/nvim-web-devicons" },
 
-  -- 主题: Catppuccin
+  -- 主题: Everforest Dark Hard
   {
-    "catppuccin/nvim",
-    name = "catppuccin",
+    "sainnhe/everforest",
     priority = 1000,
     config = function()
-      require("catppuccin").setup({
-        flavour = "latte",
-        term_colors = true,
-        integrations = {
-          cmp = true,
-          gitsigns = true,
-          treesitter = true,
-          telescope = { enabled = true },
-          which_key = true,
-          indent_blankline = { enabled = true },
-          native_lsp = { enabled = true },
-        },
-      })
-      vim.cmd.colorscheme("catppuccin")
+      vim.g.everforest_background = "hard"
+      vim.cmd.colorscheme("everforest")
     end,
   },
 
   -- 状态栏
   {
     "nvim-lualine/lualine.nvim",
-    opts = { options = { theme = "catppuccin", globalstatus = true } },
+    opts = { options = { theme = "everforest", globalstatus = true } },
   },
 
   -- 缩进线
