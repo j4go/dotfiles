@@ -9,11 +9,7 @@
 # =============================================================================
 #  基础环境变量
 # =============================================================================
-
-# web search
-export EXA_API_KEY="REDACTED"
-export TAVILY_API_KEY="REDACTED"
-export FIRECRAWL_API_KEY="REDACTED"
+export PI_SAFETY_ROOTS="$HOME/.pi;$HOME/harness;$HOME/dataphin;$HOME/workspace"
 
 # 区域与编码
 export LANG="en_US.UTF-8"
@@ -37,6 +33,15 @@ export no_proxy="$NO_PROXY"
 export HOMEBREW_BREW_GIT_REMOTE="https://mirrors.ustc.edu.cn/brew.git"
 export HOMEBREW_CORE_GIT_REMOTE="https://mirrors.ustc.edu.cn/homebrew-core.git"
 export HOMEBREW_BOTTLE_DOMAIN="https://mirrors.ustc.edu.cn/homebrew-bottles"
+
+
+# =============================================================================
+#  密钥
+# =============================================================================
+#
+# 密钥已迁移至 ~/.zshrc.local（不入库，权限 600），请勿在本文件硬编码
+# 敏感信息。~/.zshrc.local 在本文件末尾被 source，导出：
+#   EXA_API_KEY / TAVILY_API_KEY / FIRECRAWL_API_KEY / DEEPSEEK_API_KEY
 
 
 # =============================================================================
@@ -161,7 +166,7 @@ alias so="source ~/.zshrc"
 alias h="history"
 alias lsblk='diskutil list'
 
-# 代理
+# 代理（依赖 PROXY_URL / SOCKS_URL，需自行在 .zshrc.local 或此处定义）
 alias setproxy='export all_proxy=$PROXY_URL http_proxy=$PROXY_URL https_proxy=$PROXY_URL'
 alias unproxy='unset all_proxy http_proxy https_proxy'
 alias curlproxy="curl --socks5-hostname \$SOCKS_URL --http2"
@@ -169,6 +174,9 @@ alias curlproxy="curl --socks5-hostname \$SOCKS_URL --http2"
 # Homebrew
 alias brewclean='brew update && brew autoremove && brew cleanup -s'
 alias brewup='brew update && brew upgrade && brew autoremove && brew cleanup -s'
+
+# dsh（DeepSeek Harness）
+alias dsh-update='npm install -g @deepseek-ai/dsh@next'
 
 # 磁盘分析
 alias du_home="dust -X Library -x"
@@ -308,10 +316,16 @@ fi
 
 
 # =============================================================================
+#  项目环境（Java / Maven，todolist 项目）
+# =============================================================================
+
+export JAVA_HOME="$HOME/Library/Java/JavaVirtualMachines/jdk-21.0.12.1+1/Contents/Home"
+export MAVEN_HOME="$HOME/apache-maven"
+path=("$JAVA_HOME/bin" "$MAVEN_HOME/bin" $path)
+
+
+# =============================================================================
 #  本地私有配置（最后加载，覆盖上述设置）
 # =============================================================================
 
 [[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
-
-# DeepSeek API key（omp / codex / 通用）
-export DEEPSEEK_API_KEY="REDACTED"
