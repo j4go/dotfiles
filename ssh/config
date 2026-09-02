@@ -46,7 +46,7 @@ Host github.com
     IdentitiesOnly yes
     PreferredAuthentications publickey
     #ProxyCommand /opt/homebrew/bin/connect -H 192.168.3.248:10808 %h %p
-    ProxyCommand /usr/bin/nc -X connect -x 127.0.0.1:10808 %h %p
+    ProxyCommand ~/.ssh/proxy-or-direct.sh %h %p
 
 # ==========================================
 # 虚拟机 / 内网服务器
