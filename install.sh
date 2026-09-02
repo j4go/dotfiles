@@ -135,7 +135,9 @@ echo ""
 echo "📦 SSH"
 mkdir -p "$HOME/.ssh" && chmod 700 "$HOME/.ssh"
 link_file "$DOTFILES/ssh/config"            "$HOME/.ssh/config"
+link_file "$DOTFILES/ssh/proxy-or-direct.sh" "$HOME/.ssh/proxy-or-direct.sh"
 chmod 600 "$HOME/.ssh/config" 2>/dev/null || true
+chmod +x  "$HOME/.ssh/proxy-or-direct.sh" 2>/dev/null || true
 
 # ---------------------------------------------------------------------------
 #  本地私有配置（敏感信息，不纳入版本控制）
